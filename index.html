@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ESP32 Bubble Monitor</title>
+  <title>ESP32 Rising Bubble Monitor</title>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
   <style>
     body {
-      text-align: center;
-      font-family: Arial;
+      margin: 0;
+      overflow: hidden;
       background: #111;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    h1 {
+      color: white;
+      margin-top: 20px;
     }
 
     .bubble {
@@ -16,21 +25,27 @@
       height: 50px;
       background: limegreen;
       border-radius: 50%;
-      display: inline-block;
-      margin: 10px;
-      animation: pop 0.5s ease;
+      position: absolute;
+      bottom: 0;
+      animation: rise 4s linear forwards;
     }
 
-    @keyframes pop {
-      from { transform: scale(0); }
-      to { transform: scale(1); }
+    @keyframes rise {
+      from {
+        bottom: 0;
+        opacity: 1;
+      }
+      to {
+        bottom: 100%;
+        opacity: 0;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<h1 style="color:white;">ESP32 Bubble Counter</h1>
-<div id="bubbleContainer"></div>
+<h1>ESP32 Rising Bubble Monitor</h1>
 
 <script>
   var firebaseConfig = {
@@ -43,18 +58,23 @@
 
   var bubbleRef = database.ref("/device/bubbleCount");
 
+  var lastCount = 0;
+
   bubbleRef.on("value", function(snapshot) {
     var count = snapshot.val();
-    var container = document.getElementById("bubbleContainer");
-    container.innerHTML = "";
 
-    for (var i = 0; i < count; i++) {
-      var bubble = document.createElement("div");
-      bubble.className = "bubble";
-      container.appendChild(bubble);
+    if (count != null && count > lastCount) {
+
+      for (let i = lastCount; i < count; i++) {
+        createBubble();
+      }
+
+      lastCount = count;
     }
   });
-</script>
 
-</body>
-</html>
+  function createBubble() {
+    var bubble = document.createElement("div");
+    bubble.className = "bubble";
+
+    // Rand
