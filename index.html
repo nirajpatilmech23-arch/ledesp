@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>ESP32 LED Control</title>
+  <title>ESP32 Bubble Monitor</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; }
-    #ledStatus { font-size: 22px; margin-top: 20px; }
+    body {
+      text-align: center;
+      font-family: Arial;
+      background: #111;
+    }
+
+    .bubble {
+      width: 50px;
+      height: 50px;
+      background: limegreen;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 10px;
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
   </style>
-  <!-- Firebase JS SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <h1>ESP32 LED Control</h1>
-  <button onclick="turnOn()">Turn ON</button>
-  <button onclick="turnOff()">Turn OFF</button>
-  <div id="ledStatus">LED State: Unknown</div>
 
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBtWVz9zCzdNcZqX3MAzRUO2_tBFusypSI",
-      authDomain: "firstproject-b43c4.firebaseapp.com",
-      databaseURL: "https://firstproject-b43c4-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "firstproject-b43c4",
-    };
+<h1 style="color:white;">ESP32 Bubble Counter</h1>
+<div id="bubbleContainer"></div>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+<script>
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    databaseURL: "https://firstproject-b43c4-default-rtdb.asia-southeast1.firebasedatabase.app"
+  };
 
-    // Function to turn LED ON
-    function turnOn() {
-      db.ref("/led").set(1);
+  firebase.initializeApp(firebaseConfig);
+  var database = firebase.database();
+
+  var bubbleRef = database.ref("/device/bubbleCount");
+
+  bubbleRef.on("value", function(snapshot) {
+    var count = snapshot.val();
+    var container = document.getElementById("bubbleContainer");
+    container.innerHTML = "";
+
+    for (var i = 0; i < count; i++) {
+      var bubble = document.createElement("div");
+      bubble.className = "bubble";
+      container.appendChild(bubble);
     }
+  });
+</script>
 
-    // Function to turn LED OFF
-    function turnOff() {
-      db.ref("/led").set(0);
-    }
-
-    // Listen to LED state changes in real-time
-    const ledRef = db.ref("/led");
-    ledRef.on("value", (snapshot) => {
-      const state = snapshot.val();
-      document.getElementById("ledStatus").innerText = "LED State: " + (state == 1 ? "ON" : "OFF");
-    });
-  </script>
 </body>
 </html>
